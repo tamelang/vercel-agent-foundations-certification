@@ -27,6 +27,9 @@ There is no test framework wired up.
 
 - `BYPASS_SECRET` — required. Sent as the `x-vercel-protection-bypass` header on every API call. Must never be exposed to the client (no `NEXT_PUBLIC_` prefix).
 - `API_BASE_URL` — optional. Defaults to `https://vercel-agentic-swag-store-api.vercel.app/api` in `lib/api.ts`.
+- `AI_GATEWAY_API_KEY` or `VERCEL_OIDC_TOKEN` — model calls via Vercel AI Gateway (both agents).
+- `VERCEL_OIDC_TOKEN`, or `VERCEL_TOKEN` + `VERCEL_TEAM_ID` + `VERCEL_PROJECT_ID` — Vercel Sandbox for the admin agent.
+- `SHOP_AGENT_MODEL` / `ADMIN_AGENT_MODEL` / `ADMIN_SANDBOX_NAME` — optional overrides.
 
 `.env.example` is the redacted template for new developers.
 
@@ -73,9 +76,30 @@ Client components are kept minimal — only where state, effects, or browser API
 
 Everything else (`Header`, `Footer`, `ProductCard`, `ProductGrid`, `PromoBanner`, `CategoryShowcase`, `RelatedProducts`, every page) is a Server Component.
 
+### Agents (`lib/agent.ts`, `lib/workflows/`)
+
+Two `WorkflowAgent`s (`@ai-sdk/workflow`) with disjoint capabilities:
+
+- **Shopping agent** — storefront panel (`components/agent-chat.tsx`) → `POST /api/chat` → `shoppingChatWorkflow`. Tools in `lib/tools.ts`: `searchProducts`, `getAllCategories`, `getProductDetails`, `returnOrder`. `returnOrder` validates the order, then `start()`s `returnOrderWorkflow` (`lib/workflows/return-flow.ts`) as a child run with an `experimental_hook` token per order (one active return per order) and replies immediately.
+- **Admin agent** — `/admin` (`components/admin-agent-chat.tsx`) → `POST /api/admin/chat` (checks the admin cookie) → `adminChatWorkflow`. Tools in `lib/admin-tools.ts`: read-only back-office tools, the catalog tools, `bash` (Vercel Sandbox), `saveMemory`. Never import `admin-tools` from shopping code.
+- One workflow run per chat turn. Tool I/O functions are `"use step"`; `handleStepError` rethrows transient errors so steps retry, and returns a `ToolFailure` (`lib/tool-results.ts`) otherwise. Result shapes in `lib/tool-results.ts` are shared with the client renderers in `components/chat/`.
+- Streams: `lib/chat-route.ts` returns `x-workflow-run-id`; `GET /api/{chat,admin/chat}/[id]/stream` replays a run from index 0 with `uiStartIndex` (and only for that route's workflow). `hooks/use-durable-chat.ts` persists messages + the in-flight run ID in localStorage and resumes after refresh.
+- Admin sandbox (`lib/sandbox.ts`): one named, persistent, `deny-all`-network sandbox. Back-office tools write full results to `/vercel/sandbox/data/*.json`; memory lives at `/vercel/sandbox/memory/MEMORY.md` and is read at the start of every admin run.
+- The admin cookie path is `/` so it reaches `/api/admin/*`.
+
 ### Configuration quirks
 
-- `next.config.mjs` keeps `typescript.ignoreBuildErrors: true` and `images.unoptimized: true`. `images.remotePatterns` is whitelisted for `**.public.blob.vercel-storage.com` and `**.vercel-storage.com` (where API product images live); add hostnames here if the API ever returns images from a new domain.
+- `next.config.mjs` is wrapped in `withWorkflow()` (enables `"use workflow"`/`"use step"`). It keeps `typescript.ignoreBuildErrors: true` and `images.unoptimized: true`. `images.remotePatterns` is whitelisted for `**.public.blob.vercel-storage.com` and `**.vercel-storage.com` (where API product images live); add hostnames here if the API ever returns images from a new domain.
 - `@vercel/analytics` only mounts when `NODE_ENV === 'production'` (see `app/layout.tsx`).
 - The repo is linked to v0 (`https://v0.app/chat/projects/prj_X7UGePkFlLC33RuxWiTZySFDcSzO`); merges to `main` auto-deploy via Vercel. v0 may push commits directly. When deploying, set `VERCEL_PROTECTION_BYPASS_SECRET` in the Vercel project's environment variables.
 - The root layout is intentionally synchronous so it doesn't opt routes out of static. `pnpm build` should report `/` as `○` (Static), `/products/[param]` as `●` (SSG), and `/search` as `ƒ` (Dynamic). If you ever convert the layout to `async function` and `await` something that uses `cookies()`/`headers()`/`searchParams`, you will silently switch every route back to dynamic — verify the build output after layout changes.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

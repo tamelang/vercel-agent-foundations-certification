@@ -1,3 +1,5 @@
+import { withWorkflow } from "workflow/next";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -18,4 +20,5 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// Enables the "use workflow" / "use step" directives for the durable agents.
+export default withWorkflow(nextConfig);

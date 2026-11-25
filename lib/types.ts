@@ -2,6 +2,7 @@ export type OrderStatus =
   | "pending"
   | "paid"
   | "shipped"
+  | "fulfilled"
   | "delivered"
   | "cancelled";
 export type ReturnStatus = "pending" | "approved" | "rejected" | "processed";
@@ -123,6 +124,8 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  /** Hydrated by `GET /orders/{id}`. */
+  product?: Product;
 }
 
 export interface Order {
