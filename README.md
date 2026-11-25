@@ -27,7 +27,7 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-The storefront only needs `BYPASS_SECRET` to run. The `STORE_BUSINESS_AGENT_*` variables are only required once you reach the admin-agent chapter.
+The storefront only needs `BYPASS_SECRET` to run. The chats need AI Gateway access, and the admin agent's bash tool and memory need Vercel Sandbox credentials (see below).
 
 ## Environment variables
 
@@ -35,9 +35,9 @@ The storefront only needs `BYPASS_SECRET` to run. The `STORE_BUSINESS_AGENT_*` v
 | --- | --- | --- |
 | `BYPASS_SECRET` | Yes | Vercel deployment-protection bypass secret. Sent as the `x-vercel-protection-bypass` header on every API call. Server-only — never give it a `NEXT_PUBLIC_` prefix. |
 | `API_BASE_URL` | No | Override the backend API base URL. Defaults to `https://vercel-agentic-swag-store-api.vercel.app/api`. |
-| `STORE_BUSINESS_AGENT_URL` | Admin chat only | HTTP base URL of the deployed store-business-agent. |
-| `STORE_BUSINESS_AGENT_BASIC_USER` | Admin chat only | HTTP Basic auth user matching the agent's `ADMIN_AGENT_BASIC_USER`. |
-| `STORE_BUSINESS_AGENT_BASIC_PASSWORD` | Admin chat only | HTTP Basic auth password matching the agent's `ADMIN_AGENT_BASIC_PASSWORD`. |
+| `AI_GATEWAY_API_KEY` | Agents | Vercel AI Gateway key for both agents. Alternatively use `VERCEL_OIDC_TOKEN` from `vercel env pull`. |
+| `VERCEL_OIDC_TOKEN` | Admin agent | Authenticates Vercel Sandbox (and AI Gateway). Or set `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT_ID`. |
+| `SHOP_AGENT_MODEL` / `ADMIN_AGENT_MODEL` | No | AI Gateway model IDs. Default `anthropic/claude-sonnet-5.5`. |
 | `NEXT_PUBLIC_SITE_URL` | No | Public site URL used for metadata. Defaults to `http://localhost:3000`. |
 
 `.env.local` is gitignored; `.env.example` is the redacted template.
