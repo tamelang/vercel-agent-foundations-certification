@@ -37,7 +37,7 @@ The storefront only needs `BYPASS_SECRET` to run. The chats need AI Gateway acce
 | `API_BASE_URL` | No | Override the backend API base URL. Defaults to `https://vercel-agentic-swag-store-api.vercel.app/api`. |
 | `AI_GATEWAY_API_KEY` | Agents | Vercel AI Gateway key for both agents. Alternatively use `VERCEL_OIDC_TOKEN` from `vercel env pull`. |
 | `VERCEL_OIDC_TOKEN` | Admin agent | Authenticates Vercel Sandbox (and AI Gateway). Or set `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT_ID`. |
-| `SHOP_AGENT_MODEL` / `ADMIN_AGENT_MODEL` | No | AI Gateway model IDs. Default `anthropic/claude-sonnet-5.5`. |
+| `SHOP_AGENT_MODEL` / `ADMIN_AGENT_MODEL` | No | AI Gateway model IDs. Default `nvidia/nemotron-3.5-lightning-free`. |
 | `NEXT_PUBLIC_SITE_URL` | No | Public site URL used for metadata. Defaults to `http://localhost:3000`. |
 
 `.env.local` is gitignored; `.env.example` is the redacted template.

@@ -12,8 +12,10 @@ import { type InferWorkflowAgentUIMessage, WorkflowAgent } from "@ai-sdk/workflo
 import { createAdminTools } from "./admin-tools";
 import { createShoppingTools } from "./tools";
 
-export const DEFAULT_SHOP_MODEL = "anthropic/claude-sonnet-5.5";
-export const DEFAULT_ADMIN_MODEL = "anthropic/claude-sonnet-5.5";
+// Zero-cost Gateway model with tool use, so the agents run on Vercel's free
+// tier. Override with SHOP_AGENT_MODEL / ADMIN_AGENT_MODEL for a stronger model.
+export const DEFAULT_SHOP_MODEL = "nvidia/nemotron-3.5-lightning-free";
+export const DEFAULT_ADMIN_MODEL = "nvidia/nemotron-3.5-lightning-free";
 
 export const SHOPPING_INSTRUCTIONS = `You are the shopping assistant for Ship It Shop, an online store selling developer merch (apparel, drinkware, desk gear, accessories).
 
